@@ -1,12 +1,60 @@
-const express = require('express');
-const cors    = require("cors");
-const { v4 }  = require('uuid');
+const express          = require('express');
+const cors             = require("cors");
+const { v4, validate } = require('uuid');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 const repositories = [];
+
+const validateRequestParams = (request, response, next) => {
+  const { id } = request.params;
+
+  if (id === "" || id === undefined) {
+      return response.status(400).json({
+          "error": "The 'id' param is required",
+      });
+  }
+
+  if (!validate(id)) {
+      return response.status(400).json({
+          "error": "The 'id' param is invalid",
+      });
+  }
+
+  next();
+}
+
+const validateRequestBody = (request, response, next) => {
+  const { title, url, techs } = request.body;
+
+  if (title === "" || title === undefined) {
+      return response.status(400).json({
+          "error": "The 'title' param is required",
+      });
+  }
+
+  if (url === "" || url === undefined) {
+      return response.status(400).json({
+          "error": "The 'url' param is required",
+      });
+  }
+
+  if (techs === undefined || techs.length < 1) {
+      return response.status(400).json({
+          "error": "The 'techs' param is required",
+      });
+  }
+
+  if (!Array.isArray(techs)) {
+      return response.status(400).json({
+          "error": "The 'techs' param must be an Array of strings",
+      });
+  }
+
+  next();
+}
 
 const logRequests = (request, response, next) => {
   const { method, url } = request;
