@@ -63,11 +63,28 @@ const logRequests = (request, response, next) => {
 }
 app.use(logRequests);
 
+// Retorna todos os repositórios
 app.get("/repositories", (request, response) => {
   return response.json(repositories);
 });
 
-app.post("/repositories", (request, response) => {
+// Retorna um repositório
+app.get('/repositories/:id', validateRequestParams, function(request, response) {
+    const { id } = request.params;
+    const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+    if (repositoryIndex < 0) {
+        return response.status(400).json({
+            error: `Project '${id}' could not found`,
+        });
+    }
+
+    const repository = repositories[repositoryIndex];
+
+    return response.json(repository);
+});
+
+// Cria um novo repositório
+app.post('/repositories/', validateRequestBody, (request, response) => {
   const { title, url, techs } = request.body;
     const newProject = {
         id: v4(),
@@ -81,7 +98,8 @@ app.post("/repositories", (request, response) => {
     return response.json(newProject);
 });
 
-app.put("/repositories/:id", (request, response) => {
+// Atualiza um repositório
+app.put('/repositories/:id', validateRequestParams, (request, response) => {
   const { id } = request.params;
     const repositoryIndex = repositories.findIndex(repository => repository.id === id);
     if (repositoryIndex < 0) {
@@ -105,7 +123,8 @@ app.put("/repositories/:id", (request, response) => {
     return response.json(newProject);
 });
 
-app.delete("/repositories/:id", (request, response) => {
+// Exclui um repositório
+app.delete('/repositories/:id', validateRequestParams, (request, response) => {
   const { id } = request.params;
     const repositoryIndex = repositories.findIndex(repository => repository.id === id);
     if (repositoryIndex < 0) {
@@ -119,7 +138,8 @@ app.delete("/repositories/:id", (request, response) => {
     return response.status(204).send();
 });
 
-app.post("/repositories/:id/like", (request, response) => {
+// Curte um repositório
+app.post('/repositories/:id/like', validateRequestParams,(request, response) => {
   const { id } = request.params;
     const repositoryIndex = repositories.findIndex(repository => repository.id === id);
     if (repositoryIndex < 0) {
